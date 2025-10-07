@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HanName — Result</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root { --paper:#F3EFE3; --ink:#1E1E1E; --muted:#666; --gold:#c69d4e; }
+body {
+  margin:0; padding:22px; background:var(--paper); color:var(--ink);
+  font-family:'Noto Serif TC','Cormorant Garamond',serif; line-height:1.8; overflow-x:hidden;
+  animation:fadeIn .7s ease-out both;
+  background-image:radial-gradient(ellipse at 70% 20%, rgba(198,157,78,.07), transparent 40%),
+                   radial-gradient(ellipse at 20% 80%, rgba(0,0,0,.05), transparent 35%);
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.card {
+  max-width:980px;margin:16px auto;background:#fff;padding:24px;border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.06);
+  animation:fadeIn .8s .1s ease-out both;
+}
+h1 {font-family:'Cormorant Garamond',serif;text-align:center;margin:6px 0 0;
+    font-size:clamp(28px,5vw,42px);}
+.lead {color:#555;text-align:center;margin-top:6px;}
+.grid-wrap{text-align:center;margin:12px 0 0;}
+.grid-name{display:inline-flex;gap:8px;white-space:nowrap;align-items:stretch;justify-content:center;}
+.grid-box{width:110px;height:110px;position:relative;background:#fffaf1;border:1px solid #e1d7c0;
+          border-radius:10px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02);}
+.grid-box::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(to right,rgba(198,157,78,.35)1px,transparent 1px)0 0/33.33% 100%,
+             linear-gradient(to bottom,rgba(198,157,78,.35)1px,transparent 1px)0 0/100% 33.33%;
+  pointer-events:none;}
+.grid-box .char{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
+                font-size:72px;letter-spacing:2px;font-family:'Noto Serif TC',serif;}
+.pinyin-row{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap;}
+.pinyin-item{width:110px;text-align:center;font-size:14px;color:#444;font-family:'Cormorant Garamond',serif;}
+.block{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:18px;margin-top:16px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:720px){.two-col{grid-template-columns:1fr;}}
+.actions{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+.btn{background:#1E1E1E;color:#fff;padding:10px 16px;border-radius:999px;text-decoration:none;border:none;cursor:pointer;}
+.btn.secondary{background:#fff;color:#1E1E1E;border:1px solid #1E1E1E;}
+.note{color:#555;font-size:14px;line-height:1.9;text-align:left;white-space:pre-wrap;word-break:break-word;}
+.err{color:#b00020;background:#fff3f3;border:1px solid #f2c7c7;padding:12px;border-radius:12px;margin-top:12px;}
+.subtle{color:#666;font-size:13px;margin:6px 0 0;}
+ul.clean{margin:6px 0 0;padding-left:18px;}
+ul.clean li{margin:8px 0;}
+li .en-line{display:block;color:#6a6a6a;font-size:12px;margin-top:3px;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.chip{font-size:12px;border:1px solid #ddd;padding:2px 8px;border-radius:999px;color:#555;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9999;}
+.modal.show{display:flex;}
+.modal-card{background:#fff;border-radius:16px;padding:16px;width:min(480px,96vw);}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.close{background:transparent;border:none;font-size:20px;cursor:pointer;}
+.canvas-wrap{display:flex;justify-content:center;}
+#poster{width:100%;height:auto;max-width:420px;}
+.small{color:#666;font-size:12px;text-align:center;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>HanName Result</h1>
+  <p class="lead">Your personalized Chinese name · 你的專屬中文姓名</p>
+
+  <div id="errorBox" class="err" style="display:none"></div>
+
+  <div class="block">
+    <div class="grid-wrap">
+      <div id="nameGrid" class="grid-name"></div>
+      <div id="pinyinRow" class="pinyin-row"></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="block">
+      <h3>Chinese Surname · 中文姓氏</h3>
+      <p><b id="surname"></b> <span id="surnamePY" class="chip"></span></p>
+      <p id="surnameExplainEN" class="note"></p>
+      <p id="surnameExplainZH" class="note"></p>
+      <div class="subtle">Notables · 知名人物</div>
+      <ul id="surnameFamous" class="clean"></ul>
+    </div>
+    <div class="block">
+      <h3>Given Name · 名字</h3>
+      <p><b id="given"></b></p>
+      <p id="givenExplainEN" class="note"></p>
+      <p id="givenExplainZH" class="note"></p>
+      <p class="subtle">References (EN)</p>
+      <p class="note" id="classicalRefEN"></p>
+      <p class="subtle">出處（中文）</p>
+      <p class="note" id="classicalRefZH"></p>
+      <p class="subtle">Story (EN)</p>
+      <p class="note" id="classicalStoryEN"></p>
+      <p class="subtle">典籍故事（中文）</p>
+      <p class="note" id="classicalStoryZH"></p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="likeBtn">I like this name 我喜歡</button>
+    <button class="btn secondary" id="dislikeBtn">I don’t like it 我不喜歡</button>
+  </div>
+</div>
+
+<!-- 分享（只在按下「我喜歡」後顯示） -->
+<div class="modal" id="posterModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div><b>Share your name · 分享你的中文名字</b></div>
+      <button class="close" id="posterClose" aria-label="Close">✕</button>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="poster" width="1080" height="1920"></canvas>
+    </div>
+    <div class="small">Long-press to save · 長按圖片儲存　#HanName #FindChineseName</div>
+    <div style="text-align:center;margin-top:8px;">
+      <a id="dlPoster" class="btn" download="HanName-Share.png">Download</a>
+    </div>
+  </div>
+</div>
+
+<!-- 外部資料（使用 defer，並確保在 inline 腳本之前） -->
+<script src="surnameData.js" defer></script>
+<script src="givenNameData.js" defer></script>
+
+<script>
+window.addEventListener('load', () => {
+  const $ = (id) => document.getElementById(id);
+  const errorBox = $('errorBox');
+
+  // --- 小工具 ---
+  function showError(msg) { errorBox.style.display='block'; errorBox.textContent=msg; console.error(msg); }
+  function pick(a){return a[Math.floor(Math.random()*a.length)]}
+  function naivePinyin(){ return '·'; }
+
+  // --- 拼音映射（結果頁九宮格用） ---
+  function makeSurnamePinyinMapFromEntry(surnameChars, entry){
+    if (entry && entry.pinyinMap && Object.keys(entry.pinyinMap).length) return entry.pinyinMap;
+    const py = (entry && entry.pinyin) || '';
+    if (!py) return {};
+    const chars = Array.from(surnameChars);
+    const parts = py.split(/[-·\s]+/).filter(Boolean);
+    const map = {};
+    for (let i=0;i<chars.length;i++) map[chars[i]] = parts[i] || parts[0] || '';
+    return map;
+  }
+  function makeCharPinyinMap(name, pinyinFull){
+    const chars = Array.from(name);
+    const parts = (pinyinFull || '').split(/[-·\s]+/).filter(Boolean);
+    const map = {};
+    for (let i = 0; i < chars.length; i++) map[chars[i]] = parts[i] || parts[0] || '';
+    return map;
+  }
+  function buildGrid(name, pinyinMap) {
+    const g = $('nameGrid'), p = $('pinyinRow');
+    g.innerHTML=''; p.innerHTML='';
+    Array.from(name).forEach(ch=>{
+      const box = document.createElement('div');
+      box.className='grid-box';
+      const s = document.createElement('div');
+      s.className='char'; s.textContent=ch;
+      box.appendChild(s); g.appendChild(box);
+      const py = document.createElement('div');
+      py.className='pinyin-item';
+      py.textContent = (pinyinMap && pinyinMap[ch]) || naivePinyin(ch);
+      p.appendChild(py);
+    });
+  }
+
+  // --- Notables 英文職銜對照（fallback） ---
+  const TITLE_EN = {
+    '詩人':'Poet','詞人':'Lyricist','作家':'Writer','文學家':'Litterateur','史學家':'Historian',
+    '哲學家':'Philosopher','思想家':'Thinker','皇帝':'Emperor','將軍':'General','政治家':'Statesman',
+    '畫家':'Painter','書法家':'Calligrapher','教育家':'Educator','科學家':'Scientist','醫師':'Physician',
+    '音樂家':'Musician','企業家':'Entrepreneur','學者':'Scholar'
+  };
+
+  // --- IG 分享圖：工具 ---
+  function normalizePinyin(str){
+    return String(str||'').replace(/[·-]/g,' ').replace(/\s+/g,' ').trim();
+  }
+  function fullPinyinString(surnameEntry, givenData){
+    const sp = normalizePinyin(surnameEntry && surnameEntry.pinyin);
+    const gp = normalizePinyin(givenData && givenData.pinyin);
+    return [sp, gp].filter(Boolean).join(' ');
+  }
+  function wrapLines(ctx, text, maxWidth, maxLines = 0){
+    const str = String(text || '');
+    if (!str) return [];
+    const isCJK = /[^\x00-\x7F]/.test(str);
+    const tokens = isCJK ? Array.from(str) : str.split(/\s+/);
+    const lines = []; let line = '';
+    const measure = (t)=>ctx.measureText(t).width;
+
+    for (let i=0;i<tokens.length;i++){
+      const t = tokens[i];
+      const test = isCJK ? (line + t) : (line ? line + ' ' + t : t);
+      const testW = measure(test);
+      if (testW <= maxWidth){ line = test; }
+      else { if (line) lines.push(line); line = t; if (maxLines && lines.length >= maxLines-1) break; }
+    }
+    if (line && (!maxLines || lines.length < maxLines)) lines.push(line);
+
+    if (maxLines && lines.length === maxLines){
+      let last = lines[lines.length-1];
+      while (measure(last + '…') > maxWidth && last.length>0){
+        last = isCJK ? last.slice(0,-1) : last.replace(/\s*\S+$/,'');
+        if (!last) break;
+      }
+      lines[lines.length-1] = last ? (last + '…') : lines[lines.length-1];
+    }
+    return lines;
+  }
+  function drawTextBlock(ctx, { text, x, y, width, lineHeight = 44, font, fillStyle = '#222', maxLines = 0, align = 'left' }){
+    ctx.save();
+    ctx.fillStyle = fillStyle;
+    if (font) ctx.font = font;
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = align;
+    const lines = wrapLines(ctx, text, width, maxLines);
+    let cy = y;
+    for (const ln of lines){ ctx.fillText(ln, x, cy); cy += lineHeight; }
+    ctx.restore();
+    return cy;
+  }
+  function drawRoundedRect(ctx, x,y,w,h,r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y,   x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x,   y+h, rr);
+    ctx.arcTo(x,   y+h, x,   y,   rr);
+    ctx.arcTo(x,   y,   x+w, y,   rr);
+    ctx.closePath();
+  }
+
+  // --- IG：九宮格字盒 ---
+  function drawCharGridBox(ctx, x, y, size, char){
+    ctx.save();
+    const r = 16;
+    drawRoundedRect(ctx, x, y, size, size, r);
+    ctx.fillStyle = '#fffaf1'; ctx.fill();
+    ctx.strokeStyle = '#e1d7c0'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(198,157,78,0.5)'; ctx.lineWidth = 1.5;
+    const third = size/3;
+    for(let i=1;i<=2;i++){
+      ctx.moveTo(x+third*i, y); ctx.lineTo(x+third*i, y+size);
+      ctx.moveTo(x, y+third*i); ctx.lineTo(x+size, y+third*i);
+    }
+    ctx.stroke();
+    ctx.fillStyle = '#111';
+    ctx.font = Math.floor(size*0.62) + 'px Noto Serif TC';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    ctx.fillText(char, x+size/2, y+size/2-2);
+    ctx.restore();
+  }
+
+  // --- IG：性格關鍵字條形圖（英文+中文） ---
+  function ellipsize(ctx, text, maxWidth){
+    let t = String(text || '');
+    if (!t) return '';
+    if (ctx.measureText(t).width <= maxWidth) return t;
+    while (t.length > 0 && ctx.measureText(t + '…').width > maxWidth){
+      t = t.slice(0, -1);
+    }
+    return t + '…';
+  }
+  function drawTraitsBars(ctx, x, y, width, height, traits){
+    const rows = (traits || []).slice(0,5);
+    if (!rows.length) return;
+
+    // 區塊標題
+    const headerH = 38;
+    ctx.save();
+    ctx.font = '30px Cormorant Garamond';
+    ctx.fillStyle = '#222';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('Personality Mix · 性格組成', x, y + 28);
+    ctx.restore();
+
+    const topY = y + headerH;
+
+    // 版面計算
+    const labelW = Math.min(280, Math.max(220, Math.floor(width * 0.28)));
+    const valueW = 90;
+    const gap    = 12;
+    const barW   = width - labelW - valueW - gap;
+
+    // 每列高度與長條高度（自動縮放）
+    const availH = Math.max(200, height - headerH - 10);
+    const rowH   = Math.max(48, Math.min(66, Math.floor(availH / rows.length)));
+    const barH   = Math.max(22, Math.min(38, Math.floor(rowH * 0.58)));
+
+    // 背景輕底色
+    ctx.save();
+    ctx.fillStyle = '#faf7ef';
+    ctx.globalAlpha = 0.7;
+    ctx.fillRect(x, topY - 8, width, rowH * rows.length + 16);
+    ctx.restore();
+
+    const labelFont = '24px Noto Serif TC';
+    const valueFont = '24px Cormorant Garamond';
+
+    for (let i=0; i<rows.length; i++){
+      const item = rows[i];
+      const rowTop = topY + i * rowH;
+      const cy = rowTop + Math.floor(rowH / 2);
+      const pct = Math.max(0, Math.min(100, Math.round(item.value)));
+
+      // 左側標籤（英 + 中）
+      ctx.save();
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#333';
+      ctx.font = labelFont;
+      const label = `${item.en} · ${item.zh}`;
+      const labelMax = labelW - 10;
+      const labelText = ellipsize(ctx, label, labelMax);
+      ctx.fillText(labelText, x, cy);
+      ctx.restore();
+
+      // 背景條
+      const barX = x + labelW + gap;
+      const by   = cy - Math.floor(barH / 2);
+      ctx.save();
+      ctx.fillStyle = '#f1ecdf';
+      const radius = 10;
+      (function roundedRect(rx, ry, rw, rh, r){
+        ctx.beginPath();
+        const rr = Math.min(r, rw/2, rh/2);
+        ctx.moveTo(rx+rr, ry);
+        ctx.arcTo(rx+rw, ry,   rx+rw, ry+rh, rr);
+        ctx.arcTo(rx+rw, ry+rh, rx,   ry+rh, rr);
+        ctx.arcTo(rx,   ry+rh, rx,   ry,   rr);
+        ctx.arcTo(rx,   ry,   rx+rw, ry,   rr);
+        ctx.closePath();
+      })(barX, by, barW, barH, radius);
+      ctx.fill();
+
+      // 前景條
+      const fillW = Math.max(6, Math.floor(barW * pct / 100));
+      ctx.fillStyle = '#c69d4e';
+      (function roundedRect(rx, ry, rw, rh, r){
+        ctx.beginPath();
+        const rr = Math.min(r, rw/2, rh/2);
+        ctx.moveTo(rx+rr, ry);
+        ctx.arcTo(rx+rw, ry,   rx+rw, ry+rh, rr);
+        ctx.arcTo(rx+rw, ry+rh, rx,   ry+rh, rr);
+        ctx.arcTo(rx,   ry+rh, rx,   ry,   rr);
+        ctx.arcTo(rx,   ry,   rx+rw, ry,   rr);
+        ctx.closePath();
+      })(barX, by, fillW, barH, radius);
+      ctx.fill();
+
+      // 右側百分比
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.font = valueFont;
+      ctx.fillStyle = '#2a2a2a';
+      const valueX = x + labelW + gap + barW + valueW - 6;
+      ctx.fillText(pct + '%', valueX, cy);
+
+      // 行間微分隔線
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, rowTop + rowH);
+      ctx.lineTo(x + width, rowTop + rowH);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  }
+
+  // 從 QA 或名字意涵推導 5 個性格關鍵字
+  function deriveTraits(QA, data){
+    if (QA && Array.isArray(QA.traits) && QA.traits.length){
+      return QA.traits.slice(0,5).map(t=>({
+        en: String(t.en||'Trait'),
+        zh: String(t.zh||'特質'),
+        value: Number(t.value||0)
+      }));
+    }
+    const base = [
+      {en:'Wisdom', zh:'智慧'},
+      {en:'Integrity', zh:'誠信'},
+      {en:'Compassion', zh:'仁愛'},
+      {en:'Creativity', zh:'創意'},
+      {en:'Resilience', zh:'韌性'},
+      {en:'Clarity', zh:'清明'},
+      {en:'Courage', zh:'勇氣'}
+    ];
+    const txt = (data.meanEN||'') + ' ' + (data.meanZH||'');
+    function score(keyword){
+      const k = keyword.toLowerCase();
+      return (txt.toLowerCase().includes(k) ? 30 : 0) + Math.floor(Math.random()*25);
+    }
+    const ranked = base.map(o=>({ ...o, s: score(o.en)})).sort((a,b)=>b.s-a.s).slice(0,5);
+    const raw = ranked.map(r=>r.s+30);
+    const sum = raw.reduce((a,b)=>a+b,0) || 1;
+    const vals = raw.map(v=>Math.round(v/sum*100));
+    let diff = 100 - vals.reduce((a,b)=>a+b,0);
+    if (diff !== 0) vals[0] = Math.max(0, Math.min(100, vals[0]+diff));
+    for (let i=0;i<ranked.length;i++){ ranked[i].value = vals[i]; delete ranked[i].s; }
+    return ranked;
+  }
+
+  // --- IG 分享圖主函式（更大間距、九宮格名字、性格圖） ---
+  function openPosterIG({fullName, pinyin, meanEN, meanZH, traits}){
+    const modal = $('posterModal');
+    modal.classList.add('show');
+    $('posterClose').onclick = ()=>modal.classList.remove('show');
+
+    const c = $('poster'), ctx = c.getContext('2d');
+    const W=1080, H=1920;
+
+    // 背景漸層 + 暈染
+    const bg = ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,   '#f9f5ee');
+    bg.addColorStop(0.5, '#f4efe6');
+    bg.addColorStop(1,   '#efe7dc');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+    const rad1 = ctx.createRadialGradient(220,300,60, 220,300,420);
+    rad1.addColorStop(0,'rgba(198,157,78,0.22)');
+    rad1.addColorStop(1,'rgba(198,157,78,0)');
+    ctx.fillStyle = rad1; ctx.beginPath(); ctx.arc(220,300,420,0,Math.PI*2); ctx.fill();
+
+    const rad2 = ctx.createRadialGradient(860,1500,60, 860,1500,520);
+    rad2.addColorStop(0,'rgba(0,0,0,0.10)');
+    rad2.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = rad2; ctx.beginPath(); ctx.arc(860,1500,520,0,Math.PI*2); ctx.fill();
+
+    // 中央白卡
+    const cardX = 84, cardY = 220, cardW = W-168, cardH = H-460, radius = 40;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.12)';
+    ctx.shadowBlur = 24;
+    drawRoundedRect(ctx, cardX, cardY, cardW, cardH, radius);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.restore();
+
+    // 上方膠囊標籤（加大與內容間距）
+    const tagW = 260, tagH = 56;
+    const tagX = cardX + 40, tagY = cardY - tagH/2;
+    ctx.save();
+    drawRoundedRect(ctx, tagX, tagY, tagW, tagH, 28);
+    ctx.fillStyle = '#1E1E1E'; ctx.fill();
+    ctx.font = '28px Cormorant Garamond';
+    ctx.fillStyle = '#fff';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    ctx.fillText('HANNAME', tagX + 28, tagY + tagH/2 + 1);
+    ctx.restore();
+
+    // 內容區
+    const innerX = cardX + 64;
+    const innerW = cardW - 128;
+    let y = cardY + 150; // 拉開與 HANNAME 距離
+
+    // —— 中文姓名（九宮格）——
+    const chars = Array.from(fullName);
+    const count = chars.length;
+    const boxSize = Math.min(180, Math.max(120, Math.floor(innerW/(count + (count-1)*0.2))));
+    const gap = Math.floor(boxSize*0.2);
+    const totalW = boxSize*count + gap*(count-1);
+    let startX = innerX + Math.floor((innerW - totalW)/2);
+    const gridY = y;
+    chars.forEach((ch, idx)=>{
+      drawCharGridBox(ctx, startX + idx*(boxSize+gap), gridY, boxSize, ch);
+    });
+    y = gridY + boxSize + 30;
+
+    // —— 拼音（置中，最多 2 行）——
+    ctx.font = '40px Cormorant Garamond';
+    ctx.fillStyle = '#444';
+    ctx.textAlign = 'center';
+    y = drawTextBlock(ctx, {
+      text: pinyin, x: innerX + innerW/2, y,
+      width: innerW, lineHeight: 54, font: '40px Cormorant Garamond',
+      fillStyle: '#444', maxLines: 2, align:'center'
+    });
+
+    // 分隔線
+    y += 18;
+    ctx.strokeStyle = '#c69d4e'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(innerX + innerW*0.25, y);
+    ctx.lineTo(innerX + innerW*0.75, y);
+    ctx.stroke();
+    y += 36;
+
+    // —— 英文解釋（最多 5 行）——
+    ctx.textAlign = 'left';
+    y = drawTextBlock(ctx, {
+      text: meanEN, x: innerX, y,
+      width: innerW, lineHeight: 48, font: '34px Cormorant Garamond',
+      fillStyle: '#222', maxLines: 5
+    });
+    y += 24;
+
+    // —— 中文解釋（最多 5 行）——
+    y = drawTextBlock(ctx, {
+      text: meanZH, x: innerX, y,
+      width: innerW, lineHeight: 50, font: '32px Noto Serif TC',
+      fillStyle: '#333', maxLines: 5
+    });
+    y += 30;
+
+    // —— 性格關鍵字（5 項）：動態高度，避免文字或底部重疊 ——
+    const available = (cardY + cardH - 110) - y; // 預留底部 110px
+    const traitsAreaH = Math.max(260, Math.min(380, available));
+    drawTraitsBars(ctx, innerX, y, innerW, traitsAreaH, traits);
+
+    // 底部 Hashtag
+    const bottomY = cardY + cardH - 30;
+    ctx.font = '28px Cormorant Garamond';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'left';
+    ctx.fillText('#HanName  #FindChineseName  #中文姓名', innerX, bottomY);
+
+    // 下載連結
+    $('dlPoster').href = c.toDataURL('image/png');
+  }
+
+  // --- Fallback（僅供開發預覽；正式請移除） ---
+  if (!window.SURNAME_DATA) {
+    window.SURNAME_DATA = {
+      '陳': {
+        pinyin:'Chén',
+        originEN:'One of the most common Chinese surnames; historically from the State of Chen.',
+        originZH:'百家姓之一，源出妫姓，陳國之後。',
+        famous:[
+          {name:'陳子昂',title:'詩人',name_en:'Chen Ziang',title_en:'Poet'},
+          {name:'陳寅恪',title:'史學家',name_en:'Chen Yinke',title_en:'Historian'}
+        ]
+      }
+    };
+  }
+  if (!window.GIVEN_DATA) {
+    window.GIVEN_DATA = {
+      '子安': {
+        meanEN:'Calm and at ease; a life anchored in inner peace.',
+        meanZH:'平安從容，內心安定。',
+        source:'《詩經》小雅',
+        source_pinyin:'Shījīng · Xiǎoyǎ',
+        source_en:'Book of Songs (Minor Odes)',
+        story_en:'Auspicious wish for a peaceful, composed life.',
+        story_zh:'以「安」之吉意，寓平安康寧之願。',
+        pinyin:'Zi-An',
+        combos:['子安']
+      }
+    };
+  }
+
+  // --- 問答與姓氏模式 ---
+  function readQuiz(){ try { return JSON.parse(sessionStorage.getItem('hanname_quiz_answers') || '{}'); } catch { return {}; } }
+  function getRomanLast(name){ const parts = String(name||'').trim().split(/\s+/); return parts[parts.length-1]||''; }
+  function surnameModeFromQA(QA){
+    if (/english.*short|phonetic.*short/i.test(QA.surnameStrategy||'') ||
+        /short/i.test(QA.englishSurnameMode||'') ||
+        /yes|true/i.test(QA.useEnglishPhoneticShort||'')) return 'english_short';
+    if (/english.*to.*chinese|english.*phonetic/i.test(QA.surnameStrategy||'') ||
+        /map|match|cn/i.test(QA.englishSurnameMode||'')) return 'english_to_chinese';
+    if (/yes|是/i.test(QA.keepSurname||'')) return 'english_to_chinese';
+    return 'random';
+  }
+  function chooseSurnameByMode(mode, QA){
+    const roman = getRomanLast(QA.name||'');
+    if (!roman) return null;
+    if (mode === 'english_short'){
+      const letter = roman[0].toUpperCase();
+      const tempKey = `@EN:${letter}`;
+      window.SURNAME_DATA[tempKey] = {
+        pinyin: letter, pinyinMap: { [letter]: letter },
+        originEN: `Using initial of your English surname (“${roman}”).`,
+        originZH: `使用你的英文姓氏「${roman}」之首字母作為簡稱。`,
+        famous: []
+      };
+      return tempKey;
+    }
+    if (mode === 'english_to_chinese'){
+      for (const k of Object.keys(SURNAME_DATA)) {
+        const e = SURNAME_DATA[k] || {};
+        const aliases = (e.aliases || e.roman || []).map(v=>String(v).toLowerCase());
+        if (aliases.includes(roman.toLowerCase())) return k;
+      }
+      const direct = {
+        smith:'史', chen:'陳', chan:'陳', tan:'譚', lin:'林', lee:'李', li:'李', wang:'王',
+        chang:'張', zhang:'張', wu:'吳', huang:'黃', liu:'劉', yang:'楊', hsieh:'謝', hsiao:'蕭',
+        hsia:'夏', kuo:'郭', tsai:'蔡', tseng:'曾', chu:'朱', su:'蘇', he:'何', ho:'何'
+      };
+      if (direct[roman.toLowerCase()]) return direct[roman.toLowerCase()];
+    }
+    return null;
+  }
+
+  // --- 名字故事增豐 ---
+  function enrichStories(data){
+    const refEN = data.source_en || data.source_pinyin || '';
+    const refZH = data.source || '';
+    const meanEN = data.meanEN || '';
+    const meanZH = data.meanZH || '';
+    const story_en = data.story_en && data.story_en.trim()
+      ? data.story_en
+      : `${meanEN}${refEN ? ` This meaning is often associated with references such as ${refEN}.` : ''} In classical naming culture, the name carries wishes for character and destiny.`;
+    const story_zh = data.story_zh && data.story_zh.trim()
+      ? data.story_zh
+      : `${meanZH}${refZH ? `（常見於典籍出處：${refZH}）` : ''} 在傳統取名文化中，常寄託德性與人生期許。`;
+    return { story_en, story_zh, refEN, refZH };
+  }
+
+  // --- 主流程 ---
+  try {
+    const QA = readQuiz();
+    const mode = surnameModeFromQA(QA);
+
+    // 姓氏
+    let S = null;
+    if (mode === 'random') {
+      const surnames = Object.keys(SURNAME_DATA || {});
+      if (!surnames.length) throw new Error('SURNAME_DATA is empty.');
+      S = pick(surnames);
+    } else {
+      S = chooseSurnameByMode(mode, QA) || (pick(Object.keys(SURNAME_DATA||{})));
+    }
+
+    // 名字
+    if (!window.GIVEN_DATA || Object.keys(GIVEN_DATA).length < 1) {
+      showError('找不到 GIVEN_DATA，請確認 givenNameData.js 路徑與載入順序。');
+      return;
+    }
+    const gKeys = Object.keys(GIVEN_DATA || {});
+    const chosenKey = pick(gKeys);
+    const data = GIVEN_DATA[chosenKey];
+    const G = (data.combos && data.combos.length) ? pick(data.combos) : chosenKey;
+
+    // —— 渲染頁面（九宮格 + 說明） ——
+    const surnameEntry = SURNAME_DATA[S] || {};
+    const pySurname = makeSurnamePinyinMapFromEntry(S.startsWith('@EN:') ? S.replace('@EN:','') : S, surnameEntry);
+    const pyGiven = makeCharPinyinMap(G, data.pinyin || '');
+    const combinedPY = Object.assign({}, pySurname, pyGiven);
+    const full = (S.startsWith('@EN:') ? S.replace('@EN:','') : S) + G;
+    buildGrid(full, combinedPY);
+
+    // 左欄（姓氏）
+    let surnameLabel = 'Surname：';
+    const roman = getRomanLast(QA.name||'');
+    surnameLabel += S.startsWith('@EN:') ? S.replace('@EN:','') + (roman ? `  (from ${roman})` : '') : S;
+    $('surname').textContent = surnameLabel;
+    $('surnamePY').textContent = surnameEntry.pinyin || (S.startsWith('@EN:') ? S.replace('@EN:','') : '');
+    $('surnameExplainEN').textContent = surnameEntry.originEN || (S.startsWith('@EN:') ? 'Using the initial letter of your English surname as a short-form family name.' : '');
+    $('surnameExplainZH').textContent = surnameEntry.originZH || (S.startsWith('@EN:') ? '以英文姓氏之首字母作為簡稱姓氏。' : '');
+    const ul = $('surnameFamous'); ul.innerHTML='';
+    (surnameEntry.famous || []).forEach(f=>{
+      const li = document.createElement('li');
+      const zh = [f.name, f.title].filter(Boolean).join('·') || '—';
+      let titleEn = f.title_en || TITLE_EN[f.title] || '';
+      const nameEn = f.name_en || '';
+      const enLine = [nameEn, titleEn].filter(Boolean).join(' · ');
+      li.innerHTML = zh + (enLine ? `<span class="en-line">${enLine}</span>` : '');
+      ul.appendChild(li);
+    });
+    if (!(surnameEntry.famous||[]).length){
+      const li = document.createElement('li'); li.className='subtle'; li.textContent='—'; ul.appendChild(li);
+    }
+
+    // 右欄（名字）
+    const enrich = enrichStories(data);
+    $('given').textContent = 'Given name：' + G;
+    $('givenExplainEN').textContent = data.meanEN || '';
+    $('givenExplainZH').textContent = data.meanZH || '';
+    $('classicalRefEN').textContent = enrich.refEN || '';
+    $('classicalRefZH').textContent = enrich.refZH || '';
+    $('classicalStoryEN').textContent = enrich.story_en || '';
+    $('classicalStoryZH').textContent = enrich.story_zh || '';
+
+    // —— 分享（按「我喜歡」才開） ——
+    $('likeBtn').onclick = ()=>{
+      const fullPinyin = fullPinyinString(surnameEntry, data);
+      const traits = deriveTraits(QA, data);
+      openPosterIG({
+        fullName: (S.startsWith('@EN:') ? S.replace('@EN:','') : S) + G,
+        pinyin: fullPinyin,
+        meanEN: data.meanEN || '',
+        meanZH: data.meanZH || '',
+        traits
+      });
+    };
+    $('dislikeBtn').onclick = ()=>location.href='dislike.html';
+
+  } catch (e) {
+    showError('資料載入或渲染時發生問題：' + e.message + '（請檢查 surnameData.js / givenNameData.js 是否正確載入且為瀏覽器可用格式）');
+  }
+});
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HanName — Feedback</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --paper:#F3EFE3; --ink:#1E1E1E; --muted:#666; --gold:#c69d4e; }
+  body{ margin:0; padding:22px; background:var(--paper); color:var(--ink);
+        font-family:'Noto Serif TC','Cormorant Garamond',serif; line-height:1.8; }
+  .card{ max-width:760px; margin:16px auto; background:#fff; padding:22px;
+         border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.08); }
+  h1{ font-family:'Cormorant Garamond',serif; margin:0 0 6px; }
+  .sub{ color:#666; margin-bottom:10px; }
+  .group{ margin:14px 0; }
+  .choices{ display:flex; flex-wrap:wrap; gap:10px; }
+  .choice{ border:1px solid #ccc; border-radius:999px; padding:8px 12px; cursor:pointer; }
+  .choice.selected{ border-color:var(--gold); box-shadow:0 2px 10px rgba(198,157,78,.18); }
+  textarea{ width:100%; min-height:120px; font-family:inherit; font-size:16px; padding:10px; border:1px solid #ccc; border-radius:8px; }
+  .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  .btn{ background:#1E1E1E; color:#fff; padding:10px 16px; border-radius:999px; text-decoration:none; border:none; cursor:pointer; }
+  .btn.secondary{ background:#fff; color:#1E1E1E; border:1px solid #1E1E1E; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Tell us more · 請告訴我們原因</h1>
+    <div class="sub">You didn’t like this name. Help us understand so we can improve.<br>你不喜歡這個名字，請分享原因，讓我們改進。</div>
+
+    <div class="group">
+      <div><b>My name was：</b> <span id="fullName"></span></div>
+    </div>
+
+    <div class="group">
+      <div><b>Which parts didn’t work?（可複選）</b></div>
+      <div class="choices" id="reasonChoices">
+        <div class="choice">Meaning not accurate 意義不準</div>
+        <div class="choice">Tone/sound not smooth 音韻不順</div>
+        <div class="choice">Too common 太常見</div>
+        <div class="choice">Too rare 太冷僻</div>
+        <div class="choice">Style mismatch 風格不合</div>
+        <div class="choice">Surname mapping 姓氏對應不喜歡</div>
+        <div class="choice">Others 其他</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div><b>Details 具體細節</b></div>
+      <textarea id="detail" placeholder="Tell us anything specific. 可輸入具體建議…"></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="submitFeedback()">Submit 提交</button>
+      <a class="btn secondary" href="quiz.html">Back to Quiz 返回問答</a>
+      <a class="btn secondary" href="index.html">Back to Home 返回首頁</a>
+    </div>
+  </div>
+
+<script>
+  // 讀取上一頁的名字
+  document.getElementById('fullName').textContent = sessionStorage.getItem('hanname_last_fullname') || '(N/A)';
+
+  // 互動：多選
+  const box = document.getElementById('reasonChoices');
+  box.addEventListener('click', e=>{
+    if(!e.target.classList.contains('choice')) return;
+    e.target.classList.toggle('selected');
+  });
+
+  function submitFeedback(){
+    const reasons = Array.from(document.querySelectorAll('.choice.selected')).map(x=>x.textContent);
+    const detail = document.getElementById('detail').value.trim();
+    const payload = {
+      fullName: sessionStorage.getItem('hanname_last_fullname') || '',
+      reasons, detail, ts: Date.now()
+    };
+    // 你可以改成 fetch('/api/feedback', {method:'POST', body:JSON.stringify(payload)})
+    // 這裡先存到 localStorage 以利你檢視
+    const key = 'hanname_feedback';
+    const arr = JSON.parse(localStorage.getItem(key) || '[]');
+    arr.push(payload);
+    localStorage.setItem(key, JSON.stringify(arr));
+    alert('Thank you! 已收到你的意見，我們會改進。');
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>
