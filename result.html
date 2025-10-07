@@ -6,9 +6,14 @@
 <title>HanName — Result</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-:root { --paper:#F3EFE3; --ink:#1E1E1E; --muted:#666; --gold:#c69d4e; }
+:root {
+  --paper:#F3EFE3; --ink:#1E1E1E; --muted:#666; --gold:#c69d4e;
+  --grid-gap: 8px;
+  --box-size: 110px; /* 會由 JS 依容器動態覆蓋 */
+}
+* { box-sizing: border-box; }
 body {
-  margin:0; padding:22px; background:var(--paper); color:var(--ink);
+  margin:0; padding:clamp(14px, 3.5vw, 22px); background:var(--paper); color:var(--ink);
   font-family:'Noto Serif TC','Cormorant Garamond',serif; line-height:1.8; overflow-x:hidden;
   animation:fadeIn .7s ease-out both;
   background-image:radial-gradient(ellipse at 70% 20%, rgba(198,157,78,.07), transparent 40%),
@@ -16,46 +21,70 @@ body {
 }
 @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 .card {
-  max-width:980px;margin:16px auto;background:#fff;padding:24px;border-radius:16px;
+  width: min(980px, 100%);
+  margin:16px auto;
+  background:#fff;
+  padding:clamp(16px, 3.6vw, 24px);
+  border-radius:16px;
   box-shadow:0 10px 30px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.06);
   animation:fadeIn .8s .1s ease-out both;
 }
 h1 {font-family:'Cormorant Garamond',serif;text-align:center;margin:6px 0 0;
-    font-size:clamp(28px,5vw,42px);}
-.lead {color:#555;text-align:center;margin-top:6px;}
+    font-size:clamp(24px,5vw,42px);}
+.lead {color:#555;text-align:center;margin-top:6px;font-size:clamp(12px,2.8vw,16px);}
 .grid-wrap{text-align:center;margin:12px 0 0;}
-.grid-name{display:inline-flex;gap:8px;white-space:nowrap;align-items:stretch;justify-content:center;}
-.grid-box{width:110px;height:110px;position:relative;background:#fffaf1;border:1px solid #e1d7c0;
-          border-radius:10px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02);}
+.grid-name{
+  display:inline-flex;gap:var(--grid-gap);white-space:nowrap;align-items:stretch;justify-content:center;
+}
+.grid-box{
+  width:var(--box-size);height:var(--box-size);position:relative;background:#fffaf1;border:1px solid #e1d7c0;
+  border-radius:10px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02);
+}
 .grid-box::before{content:"";position:absolute;inset:0;
   background:linear-gradient(to right,rgba(198,157,78,.35)1px,transparent 1px)0 0/33.33% 100%,
              linear-gradient(to bottom,rgba(198,157,78,.35)1px,transparent 1px)0 0/100% 33.33%;
   pointer-events:none;}
-.grid-box .char{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
-                font-size:72px;letter-spacing:2px;font-family:'Noto Serif TC',serif;}
-.pinyin-row{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap;}
-.pinyin-item{width:110px;text-align:center;font-size:14px;color:#444;font-family:'Cormorant Garamond',serif;}
-.block{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:18px;margin-top:16px;}
+.grid-box .char{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);
+  font-size:calc(var(--box-size) * 0.66);
+  letter-spacing:2px;font-family:'Noto Serif TC',serif;
+}
+.pinyin-row{
+  display:flex;gap:var(--grid-gap);justify-content:center;margin-top:8px;flex-wrap:wrap;
+}
+.pinyin-item{
+  width:var(--box-size);text-align:center;
+  font-size:clamp(12px, 3.4vw, 16px);
+  color:#444;font-family:'Cormorant Garamond',serif;
+}
+.block{
+  background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;
+  padding:clamp(12px, 3.2vw, 18px);margin-top:16px;
+}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:720px){.two-col{grid-template-columns:1fr;}}
+@media(max-width:720px){.two-col{grid-template-columns:1fr;gap:10px;}}
 .actions{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
-.btn{background:#1E1E1E;color:#fff;padding:10px 16px;border-radius:999px;text-decoration:none;border:none;cursor:pointer;}
+.btn{background:#1E1E1E;color:#fff;padding:10px 16px;border-radius:999px;text-decoration:none;border:none;cursor:pointer;font-size:clamp(14px,3.6vw,16px);}
 .btn.secondary{background:#fff;color:#1E1E1E;border:1px solid #1E1E1E;}
-.note{color:#555;font-size:14px;line-height:1.9;text-align:left;white-space:pre-wrap;word-break:break-word;}
+.note{color:#555;font-size:clamp(13px,3.3vw,14px);line-height:1.9;text-align:left;white-space:pre-wrap;word-break:break-word;}
 .err{color:#b00020;background:#fff3f3;border:1px solid #f2c7c7;padding:12px;border-radius:12px;margin-top:12px;}
-.subtle{color:#666;font-size:13px;margin:6px 0 0;}
+.subtle{color:#666;font-size:clamp(12px,3.2vw,13px);margin:6px 0 0;}
 ul.clean{margin:6px 0 0;padding-left:18px;}
-ul.clean li{margin:8px 0;}
-li .en-line{display:block;color:#6a6a6a;font-size:12px;margin-top:3px;}
+ul.clean li{margin:8px 0;word-break:break-word;}
+li .en-line{display:block;color:#6a6a6a;font-size:clamp(11px,3vw,12px);margin-top:3px;}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
 .chip{font-size:12px;border:1px solid #ddd;padding:2px 8px;border-radius:999px;color:#555;}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9999;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;}
 .modal.show{display:flex;}
-.modal-card{background:#fff;border-radius:16px;padding:16px;width:min(480px,96vw);}
-.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.modal-card{
+  background:#fff;border-radius:16px;
+  padding:16px;width:min(520px,96vw);
+  max-height:96vh; overflow:auto;  /* 手機可滾動 */
+}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;}
 .close{background:transparent;border:none;font-size:20px;cursor:pointer;}
 .canvas-wrap{display:flex;justify-content:center;}
-#poster{width:100%;height:auto;max-width:420px;}
+#poster{width:100%;height:auto;max-width:480px;}
 .small{color:#666;font-size:12px;text-align:center;margin-top:6px;}
 </style>
 </head>
@@ -67,7 +96,7 @@ li .en-line{display:block;color:#6a6a6a;font-size:12px;margin-top:3px;}
   <div id="errorBox" class="err" style="display:none"></div>
 
   <div class="block">
-    <div class="grid-wrap">
+    <div class="grid-wrap" id="gridWrap">
       <div id="nameGrid" class="grid-name"></div>
       <div id="pinyinRow" class="pinyin-row"></div>
     </div>
@@ -114,21 +143,25 @@ li .en-line{display:block;color:#6a6a6a;font-size:12px;margin-top:3px;}
     <div class="canvas-wrap">
       <canvas id="poster" width="1080" height="1920"></canvas>
     </div>
-    <div class="small">Long-press to save · 長按圖片儲存　#HanName #FindChineseName</div>
+    <div class="small">#HanName #FindChineseName</div>
     <div style="text-align:center;margin-top:8px;">
       <a id="dlPoster" class="btn" download="HanName-Share.png">Download</a>
     </div>
   </div>
 </div>
 
-<!-- 外部資料（使用 defer，並確保在 inline 腳本之前） -->
+<!-- 外部資料（建議用 defer，並確保在 inline 腳本之前） -->
 <script src="surnameData.js" defer></script>
 <script src="givenNameData.js" defer></script>
-
 <script>
 window.addEventListener('load', () => {
   const $ = (id) => document.getElementById(id);
   const errorBox = $('errorBox');
+  const gridWrap = $('gridWrap');
+
+  // 用於 resize 重算九宮格
+  let CURRENT_NAME = '';
+  let CURRENT_PINYIN_MAP = {};
 
   // --- 小工具 ---
   function showError(msg) { errorBox.style.display='block'; errorBox.textContent=msg; console.error(msg); }
@@ -153,7 +186,25 @@ window.addEventListener('load', () => {
     for (let i = 0; i < chars.length; i++) map[chars[i]] = parts[i] || parts[0] || '';
     return map;
   }
+
+  // 動態計算九宮格盒子尺寸（避免手機跑版）
+  function computeBoxSize(nameLen){
+    const wrapWidth = gridWrap.clientWidth || document.body.clientWidth;
+    const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--grid-gap')) || 8;
+    // 留一點邊距
+    const usable = wrapWidth - 12 - gap*(nameLen-1);
+    const box = Math.floor(usable / nameLen);
+    // 限制範圍（手機 72px 起，桌機最多 110px）
+    return Math.max(72, Math.min(110, box));
+  }
+
   function buildGrid(name, pinyinMap) {
+    CURRENT_NAME = name;
+    CURRENT_PINYIN_MAP = pinyinMap || {};
+    // 設定自適應尺寸
+    const size = computeBoxSize(name.length);
+    gridWrap.style.setProperty('--box-size', size + 'px');
+
     const g = $('nameGrid'), p = $('pinyinRow');
     g.innerHTML=''; p.innerHTML='';
     Array.from(name).forEach(ch=>{
@@ -168,6 +219,14 @@ window.addEventListener('load', () => {
       p.appendChild(py);
     });
   }
+
+  // 視窗改變時，重算一次九宮格
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    if (!CURRENT_NAME) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(()=> buildGrid(CURRENT_NAME, CURRENT_PINYIN_MAP), 120);
+  });
 
   // --- Notables 英文職銜對照（fallback） ---
   const TITLE_EN = {
@@ -273,7 +332,7 @@ window.addEventListener('load', () => {
     const rows = (traits || []).slice(0,5);
     if (!rows.length) return;
 
-    // 區塊標題
+    // 標題
     const headerH = 38;
     ctx.save();
     ctx.font = '30px Cormorant Garamond';
@@ -446,7 +505,7 @@ window.addEventListener('load', () => {
     ctx.fill();
     ctx.restore();
 
-    // 上方膠囊標籤（加大與內容間距）
+    // 上方膠囊標籤
     const tagW = 260, tagH = 56;
     const tagX = cardX + 40, tagY = cardY - tagH/2;
     ctx.save();
@@ -462,7 +521,7 @@ window.addEventListener('load', () => {
     // 內容區
     const innerX = cardX + 64;
     const innerW = cardW - 128;
-    let y = cardY + 150; // 拉開與 HANNAME 距離
+    let y = cardY + 150;
 
     // —— 中文姓名（九宮格）——
     const chars = Array.from(fullName);
@@ -472,45 +531,28 @@ window.addEventListener('load', () => {
     const totalW = boxSize*count + gap*(count-1);
     let startX = innerX + Math.floor((innerW - totalW)/2);
     const gridY = y;
-    chars.forEach((ch, idx)=>{
-      drawCharGridBox(ctx, startX + idx*(boxSize+gap), gridY, boxSize, ch);
-    });
+    chars.forEach((ch, idx)=>{ drawCharGridBox(ctx, startX + idx*(boxSize+gap), gridY, boxSize, ch); });
     y = gridY + boxSize + 30;
 
     // —— 拼音（置中，最多 2 行）——
     ctx.font = '40px Cormorant Garamond';
     ctx.fillStyle = '#444';
     ctx.textAlign = 'center';
-    y = drawTextBlock(ctx, {
-      text: pinyin, x: innerX + innerW/2, y,
-      width: innerW, lineHeight: 54, font: '40px Cormorant Garamond',
-      fillStyle: '#444', maxLines: 2, align:'center'
-    });
+    y = drawTextBlock(ctx, { text:pinyin, x: innerX + innerW/2, y, width: innerW, lineHeight: 54, font: '40px Cormorant Garamond', fillStyle: '#444', maxLines: 2, align:'center' });
 
     // 分隔線
     y += 18;
     ctx.strokeStyle = '#c69d4e'; ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(innerX + innerW*0.25, y);
-    ctx.lineTo(innerX + innerW*0.75, y);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(innerX + innerW*0.25, y); ctx.lineTo(innerX + innerW*0.75, y); ctx.stroke();
     y += 36;
 
     // —— 英文解釋（最多 5 行）——
     ctx.textAlign = 'left';
-    y = drawTextBlock(ctx, {
-      text: meanEN, x: innerX, y,
-      width: innerW, lineHeight: 48, font: '34px Cormorant Garamond',
-      fillStyle: '#222', maxLines: 5
-    });
+    y = drawTextBlock(ctx, { text: meanEN, x: innerX, y, width: innerW, lineHeight: 48, font: '34px Cormorant Garamond', fillStyle: '#222', maxLines: 5 });
     y += 24;
 
     // —— 中文解釋（最多 5 行）——
-    y = drawTextBlock(ctx, {
-      text: meanZH, x: innerX, y,
-      width: innerW, lineHeight: 50, font: '32px Noto Serif TC',
-      fillStyle: '#333', maxLines: 5
-    });
+    y = drawTextBlock(ctx, { text: meanZH, x: innerX, y, width: innerW, lineHeight: 50, font: '32px Noto Serif TC', fillStyle: '#333', maxLines: 5 });
     y += 30;
 
     // —— 性格關鍵字（5 項）：動態高度，避免文字或底部重疊 ——
